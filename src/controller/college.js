@@ -12,7 +12,8 @@ export default({ config, db }) => {
   api.post('/add', (req, res) => {
     let newTeacher = new College();
     newTeacher.name = req.body.name;
-
+    newTeacher.teacherType = req.body.teacherType;
+    newTeacher.avgrating = req.body.avgrating;
     newTeacher.save(err => {
       if(err) {
         res.send(err);
@@ -53,6 +54,34 @@ export default({ config, db }) => {
           res.send(err);
         }
         res.json({message: "Teachers INFO Updated"});
+      });
+    });
+  });
+
+  // add a review or a suggestion
+  // 'v1/college/reviews/add/:id'
+  api.post('/reviews/add/:id', (req, res) => {
+    College.findById(req.params.id, (err, teacher) => {
+      if (err) {
+        res.send(err);
+      }
+      let newReview = new Review();
+
+      newReview.title = req.body.title;
+      newReview.text = req.body.text;
+      newReview.teacher = teacher._id;
+      newReview.save((err, review) => {
+        if(err) {
+          res.send(err);
+        }
+        // can have serveral reviews
+        teacher.reviews.push(newReview);
+        teacher.save(err => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'Teacher review saved'});
+        });
       });
     });
   });
